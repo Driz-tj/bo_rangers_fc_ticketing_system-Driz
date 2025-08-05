@@ -3,4 +3,5 @@ qrcode==8.2
 Pillow==11.3.0
 asgiref==3.9.1
 sqlparse==0.5.3
+gunicon
 
