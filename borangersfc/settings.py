@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure--ix_u5u55q4t*dtb^c1)arm_l$p$)@szwhf+euf!hnbtcjx+jz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+import os
+
+ALLOWED_HOSTS = [
+    'bo-rangers-fc-ticketing-system-driz.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
+
 
 
 # Application definition
