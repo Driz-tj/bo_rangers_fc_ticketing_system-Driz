@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Fixtures - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center mb-3" style="font-weight:700; letter-spacing:1px;">
+                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 48px; width: 48px; object-fit: contain; margin-right: 10px; vertical-align: middle;">
+                Sierra Leone Premier League Fixtures
+            </h1>
+            <p class="text-center text-muted mb-0" style="font-size:1.1rem;">All Bo Rangers FC matches for the season</p>
+        </div>
+    </div>
+    <!-- Filters Bar -->
+    <div class="row mb-4 justify-content-center">
+        <div class="col-lg-10">
+            <form class="row g-2 align-items-center bg-light rounded shadow-sm p-3" method="get">
+                <div class="col-md-3 col-6">
+                    <input type="text" name="search" class="form-control" placeholder="Search team/date..." value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="col-md-3 col-6">
+                    <input type="date" name="date" class="form-control" value="{{ request.GET.date|default:'' }}">
+                </div>
+                <div class="col-md-2 col-6">
+                    <select name="status" class="form-select">
+                        <option value="all" {% if current_filter == 'all' %}selected{% endif %}>All</option>
+                        <option value="upcoming" {% if current_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="live" {% if current_filter == 'live' %}selected{% endif %}>Live</option>
+                        <option value="completed" {% if current_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-6">
+                    <select name="home_away" class="form-select">
+                        <option value="all">Home/Away</option>
+                        <option value="home">Home</option>
+                        <option value="away">Away</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-12 text-end">
+                    <button type="submit" class="btn btn-danger w-100"><i class="bi bi-funnel"></i> Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if matches %}
+    <div class="row g-4">
+        {% for match in matches %}
+        <div class="col-lg-6 col-xl-4">
+            <div class="card card-hover h-100 shadow-sm {% if match.status == 'live' %}live-match-card{% endif %}">
+                <div class="card-header {% if match.status == 'live' %}bg-danger{% else %}bg-success{% endif %} text-white text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-uppercase text-white small">
+                            <i class="bi bi-calendar-event"></i> {{ match.date|date:"D, d F Y" }}
+                        </span>
+                        <h6 class="mb-0">Matchday {{ match.matchday }}</h6>
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">{{ match.title }}</h5>
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="text-center pe-3">
+                            <h6 class="fw-bold mb-2">{{ match.home_team }}</h6>
+                            {% if match.home_team_logo %}
+                                <img src="{{ match.home_team_logo.url }}" alt="{{ match.home_team }}" style="height: 40px; width: 40px; object-fit: contain;">
+                            {% else %}
+                                <img src="/media/qr_codes/Logo.png" alt="{{ match.home_team }}" style="height: 40px; width: 40px; object-fit: contain;">
+                            {% endif %}
+                        </div>
+                        <div class="mx-2">
+                            <div class="h6 fw-bold mb-1">VS</div>
+                        </div>
+                        <div class="text-center ps-3">
+                            <h6 class="fw-bold mb-2">{{ match.opponent }}</h6>
+                            {% if match.opponent_logo %}
+                                <img src="{{ match.opponent_logo.url }}" alt="{{ match.opponent }}" style="height: 40px; width: 40px; object-fit: contain;">
+                            {% else %}
+                                <div class="rounded p-2">
+                                    <i class="bi bi-shield-fill text-secondary" style="font-size: 2rem;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        <i class="bi bi-geo-alt"></i> {{ match.venue }}<br>
+                        <i class="bi bi-clock"></i> {{ match.date|date:"H:i" }}
+                    </p>
+                    <span class="badge {% if match.status == 'live' %}bg-danger animate-pulse{% else %}bg-success{% endif %}">{{ match.get_status_display }}</span>
+                </div>
+                <div class="card-footer text-center">
+                    {% if match.status == 'upcoming' %}
+                        <a href="{% url 'match_preview' match.id %}" class="btn btn-outline-danger btn-sm">Preview</a>
+                    {% elif match.status == 'live' %}
+                        <a href="{% url 'match_preview' match.id %}" class="btn btn-outline-danger btn-sm">Preview</a>
+                    {% elif match.status == 'completed' %}
+                        <a href="{% url 'match_preview' match.id %}" class="btn btn-outline-warning btn-sm">Preview</a>
+                    {% endif %}
+                    {% if user.is_authenticated and match.status == 'upcoming' %}
+                        <a href="{% url 'book_ticket' match.id %}" class="btn btn-success btn-sm ms-2">
+                            <i class="bi bi-ticket-perforated"></i> Book
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body py-5">
+                <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">No matches found</h4>
+                <p class="text-muted">Try adjusting your filters or check back later for new fixtures.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.live-match-card {
+    animation: liveMatchGlow 2s ease-in-out infinite alternate;
+    border: 2px solid #dc3545;
+}
+
+@keyframes liveMatchGlow {
+    0% {
+        box-shadow: 0 0 5px rgba(220, 53, 69, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.6), 0 0 30px rgba(220, 53, 69, 0.4);
+    }
+}
+
+.live-match-card:hover {
+    animation: liveMatchGlowHover 1s ease-in-out infinite alternate;
+}
+
+@keyframes liveMatchGlowHover {
+    0% {
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.5), 0 0 20px rgba(220, 53, 69, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(220, 53, 69, 0.8), 0 0 40px rgba(220, 53, 69, 0.5);
+    }
+}
+</style>
+{% endblock %}

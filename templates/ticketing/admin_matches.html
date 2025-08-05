@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Matches - Admin - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="bi bi-calendar-event text-danger"></i> Manage Matches
+                </h1>
+                <div>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <a href="{% url 'add_match' %}" class="btn btn-success">
+                        <i class="bi bi-plus"></i> Add New Match
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Matches List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list"></i> All Matches
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if matches %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Matchday</th>
+                                        <th>Match</th>
+                                        <th>Date & Time</th>
+                                        <th>Venue</th>
+                                        <th>Status</th>
+                                        <th>Tickets Sold</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for match in matches %}
+                                        <tr>
+                                            <td>
+                                                {{ match.matchday }}
+                                                {% if match.status == 'live' %}
+                                                    <span class="badge bg-danger ms-1" title="Live Match">
+                                                        <i class="bi bi-broadcast"></i>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ match.home_team }} vs {{ match.opponent }}</strong><br>
+                                                <small class="text-muted">{{ match.title }}</small>
+                                            </td>
+                                            <td>
+                                                {{ match.date|date:"M d, Y" }}<br>
+                                                <small class="text-muted">{{ match.date|time:"H:i" }}</small>
+                                            </td>
+                                            <td>{{ match.venue }}</td>
+                                            <td>
+                                                {% if match.status == 'upcoming' %}
+                                                    <span class="text-success">
+                                                        <i class="bi bi-clock"></i> {{ match.get_status_display }}
+                                                    </span>
+                                                {% elif match.status == 'live' %}
+                                                    <span class="text-danger">
+                                                        <i class="bi bi-broadcast"></i> {{ match.get_status_display }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-secondary">
+                                                        <i class="bi bi-check-circle"></i> {{ match.get_status_display }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ match.sold_tickets_count }} tickets
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'edit_match' match.id %}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                    {% if match.status == 'upcoming' %}
+                                                        <button onclick="updateMatchStatus({{ match.id }}, 'live')" class="btn btn-success btn-sm">
+                                                            <i class="bi bi-play"></i> Start
+                                                        </button>
+                                                        <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this match? This action cannot be undone.');">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="delete_match" value="1">
+                                                            <input type="hidden" name="match_id" value="{{ match.id }}">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                                <i class="bi bi-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    {% elif match.status == 'live' %}
+                                                        <button onclick="updateMatchStatus({{ match.id }}, 'completed')" class="btn btn-danger btn-sm">
+                                                            <i class="bi bi-stop"></i> End
+                                                        </button>
+                                                        <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this match? This action cannot be undone.');">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="delete_match" value="1">
+                                                            <input type="hidden" name="match_id" value="{{ match.id }}">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                                <i class="bi bi-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this match? This action cannot be undone.');">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="delete_match" value="1">
+                                                            <input type="hidden" name="match_id" value="{{ match.id }}">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                                <i class="bi bi-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3 text-muted">No matches found</h4>
+                            <p class="text-muted">Start by adding your first match.</p>
+                            <a href="{% url 'add_match' %}" class="btn btn-success">
+                                <i class="bi bi-plus"></i> Add New Match
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ total_matches }}</h3>
+                    <p class="mb-0">Total Matches</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ upcoming_count }}</h3>
+                    <p class="mb-0">Upcoming</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>{{ live_count }}</h3>
+                    <p class="mb-0">Live</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ completed_count }}</h3>
+                    <p class="mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Match Details Modal -->
+<div class="modal fade" id="matchDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Match Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="matchDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function viewMatchDetails(matchId) {
+        // This would normally fetch match details via AJAX
+        // For now, we'll show a placeholder
+        document.getElementById('matchDetailsContent').innerHTML = `
+            <div class="text-center">
+                <i class="bi bi-info-circle text-primary" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Match Details</h5>
+                <p>Detailed match information would be displayed here.</p>
+                <p class="text-muted">This feature can be enhanced with AJAX calls to fetch real-time data.</p>
+            </div>
+        `;
+        
+        const modal = new bootstrap.Modal(document.getElementById('matchDetailsModal'));
+        modal.show();
+    }
+    
+    function updateMatchStatus(matchId, newStatus) {
+        if (confirm(`Are you sure you want to change the match status to "${newStatus}"?`)) {
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Updating...';
+            button.disabled = true;
+            
+            // Make AJAX request
+            fetch('{% url "update_match_status" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    match_id: matchId,
+                    new_status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+                    
+                    // Reload page to reflect changes
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    // Show error message
+                    alert('Error: ' + data.error);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the match status.');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+    }
+    
+    // Auto-refresh every 2 minutes for live matches
+    const hasLiveMatches = document.querySelector('.badge.bg-warning');
+    if (hasLiveMatches) {
+        setTimeout(function() {
+            location.reload();
+        }, 120000); // 2 minutes
+    }
+</script>
+{% endblock %}
+{% endblock %}

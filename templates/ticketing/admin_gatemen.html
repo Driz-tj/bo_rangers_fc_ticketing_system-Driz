@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Gatemen - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">
+                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 24px; height: 24px;" class="me-2">
+                <span class="text-success">Manage Gatemen</span>
+            </h1>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Add New Gateman -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-plus"></i> Add New Gateman
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="text-danger small">{{ form.password1.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger small">{{ form.password2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-plus"></i> Create Gateman
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gatemen Statistics -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Gatemen Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h3 class="text-success">{{ gatemen_profiles|length }}</h3>
+                                <p class="mb-0 text-muted">Total Gatemen</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-warning">
+                                {% for profile in gatemen_profiles %}
+                                    {% if forloop.first %}{{ profile.today_scans }}{% endif %}
+                                    {% if not forloop.first %}+{{ profile.today_scans }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </h3>
+                            <p class="mb-0 text-muted">Today's Scans</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Gatemen -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people"></i> Existing Gatemen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if gatemen_profiles %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Total Scans</th>
+                                        <th>Today's Scans</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for profile in gatemen_profiles %}
+                                    <tr>
+                                        <td>
+                                            <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 16px; height: 16px;" class="me-2">
+                                            <span class="text-success">{{ profile.user.get_full_name|default:profile.user.username }}</span>
+                                        </td>
+                                        <td>{{ profile.user.username }}</td>
+                                        <td>{{ profile.user.email }}</td>
+                                        <td>
+                                            <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 16px; height: 16px;" class="me-1">
+                                            <span class="text-primary">{{ profile.total_scans }}</span>
+                                        </td>
+                                        <td>
+                                            <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 16px; height: 16px;" class="me-1">
+                                            <span class="text-warning">{{ profile.today_scans }}</span>
+                                        </td>
+                                        <td>
+                                            {% if profile.user.is_active %}
+                                                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 16px; height: 16px;" class="me-1">
+                                                <span class="text-success">Active</span>
+                                            {% else %}
+                                                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 16px; height: 16px;" class="me-1">
+                                                <span class="text-danger">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="deleteGateman({{ profile.user.id }}, '{{ profile.user.username }}')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+                            <h5 class="mt-3 text-muted">No Gatemen Found</h5>
+                            <p class="text-muted">Create your first gateman using the form above.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteGateman(userId, username) {
+    if (confirm(`Are you sure you want to delete gateman "${username}"? This action cannot be undone.`)) {
+        fetch(`/delete-gateman/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the gateman.');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Ticket - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Message -->
+            <div class="alert alert-success text-center mb-4">
+                <i class="bi bi-check-circle-fill" style="font-size: 2rem;"></i>
+                <h4 class="mt-2">Payment Successful!</h4>
+                <p class="mb-0">Your ticket has been generated and is ready for use.</p>
+            </div>
+
+            <!-- Digital Ticket -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="mb-0">
+                        <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 40px; width: 40px; object-fit: contain; margin-right: 10px;">
+                        Bo Rangers FC
+                    </h3>
+                    <p class="mb-0">Digital Match Ticket</p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Ticket Information -->
+                        <div class="col-md-8">
+                            <div class="ticket-info">
+                                <h4 class="text-danger mb-3">{{ ticket.match.title }}</h4>
+                                <h5 class="mb-4">vs {{ ticket.match.opponent }}</h5>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-calendar"></i> Date:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.match.date|date:"l, F d, Y" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-clock"></i> Time:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.match.date|time:"H:i" }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-geo-alt"></i> Venue:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.match.venue }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-tag"></i> Category:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.ticket_category.name }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-hash"></i> Quantity:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.quantity }} ticket{{ ticket.quantity|pluralize }}
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-sm-4">
+                                        <strong><i class="bi bi-person"></i> Holder:</strong>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ ticket.user.get_full_name|default:ticket.user.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- QR Code -->
+                        <div class="col-md-4 text-center">
+                            {% if ticket.qr_code %}
+                                <div class="qr-code-section">
+                                    <h6 class="mb-3">Scan for Entry</h6>
+                                    <img src="{{ ticket.qr_code.url }}" alt="QR Code" class="img-fluid border rounded" style="max-width: 200px;">
+                                    <p class="small text-muted mt-2">
+                                        Present this QR code at the stadium entrance
+                                    </p>
+                                </div>
+                            {% else %}
+                                <div class="text-muted">
+                                    <i class="bi bi-hourglass-split" style="font-size: 3rem;"></i>
+                                    <p>QR Code generating...</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Ticket ID and Purchase Info -->
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Ticket ID:</strong> {{ ticket.ticket_id }}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted">
+                                <strong>Purchased:</strong> {{ ticket.created_at|date:"M d, Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0 text-success">
+                                Total Paid: Nle{{ ticket.total_price }}
+                            </h5>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge bg-success fs-6 p-2">
+                                <i class="bi bi-check-circle"></i> {{ ticket.get_payment_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'fixtures' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-event"></i> View More Matches
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-person"></i> My Profile
+                    </a>
+                    <a href="{% url 'download_ticket' ticket.ticket_id %}" class="btn btn-outline-success">
+                        <i class="bi bi-download"></i> Download Ticket
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Important Information -->
+            <div class="alert alert-info mt-4">
+                <h6><i class="bi bi-info-circle"></i> Important Information</h6>
+                <ul class="mb-0">
+                    <li>Please arrive at the stadium at least 30 minutes before kickoff</li>
+                    <li>This ticket is valid for {{ ticket.quantity }} person{{ ticket.quantity|pluralize }} only</li>
+                    <li>Present this QR code at the entrance for scanning</li>
+                    <li>Keep this ticket safe - screenshots are acceptable</li>
+                    <li>For support, contact the club at tickets@borangersfc.com</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    @media print {
+        .navbar, .footer, .btn-group, .alert-info {
+            display: none !important;
+        }
+        .card {
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+        }
+        .card-header {
+            background-color: #dc3545 !important;
+            -webkit-print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh if QR code is not yet generated
+    {% if not ticket.qr_code %}
+        setTimeout(function() {
+            location.reload();
+        }, 3000);
+    {% endif %}
+</script>
+{% endblock %}
+{% endblock %}

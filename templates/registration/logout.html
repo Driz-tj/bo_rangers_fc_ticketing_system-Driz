@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Logged Out - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="bi bi-box-arrow-right"></i> Logged Out
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="mb-3">You have been successfully logged out.</h5>
+                    <a href="{% url 'login' %}" class="btn btn-success btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Log In Again
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

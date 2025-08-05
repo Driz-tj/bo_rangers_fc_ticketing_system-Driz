@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Scanner - Bo Rangers FC</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .scanner-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .scanner-header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #28a745;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scanner-main {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stats-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #28a745;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .camera-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .scan-modes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #28a745;
+            background: white;
+            color: #28a745;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active {
+            background: #28a745;
+            color: white;
+        }
+        
+        .mode-btn:hover {
+            background: #28a745;
+            color: white;
+        }
+        
+        .manual-input {
+            display: none;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .ticket-input {
+            font-size: 18px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .ticket-input:focus {
+            border-color: #28a745;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .scan-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        .scan-btn:hover {
+            background: #218838;
+        }
+        
+        .scan-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .scan-result {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .scan-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .scan-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .ticket-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .recent-scans {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .recent-scan-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .camera-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .camera-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .camera-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logout Button -->
+    <div class="logout-btn">
+        <a href="/logout/" class="btn btn-outline-light">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+
+    <div class="scanner-container">
+        <!-- Header -->
+        <div class="scanner-header">
+            <h1>
+                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 40px; height: 40px; margin-right: 10px;">
+                Bo Rangers FC - Ticket Scanner
+            </h1>
+            <p class="mb-0">Welcome, {{ user.get_full_name|default:user.username }}</p>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-section">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ today_scans }}</div>
+                        <h6>Tickets Scanned Today</h6>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ recent_scans|length }}</div>
+                        <h6>Recent Scans</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scanner Section -->
+        <div class="scanner-main">
+            <h3 class="text-center mb-4">
+                <img src="/media/qr_codes/Logo.png" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px;">
+                <span class="text-success">Scan Ticket</span>
+            </h3>
+            
+            <!-- Scan Mode Toggle -->
+            <div class="scan-modes">
+                <button class="mode-btn active" onclick="switchMode('camera')" id="cameraBtn">
+                    <i class="bi bi-camera"></i> Camera
+                </button>
+                <button class="mode-btn" onclick="switchMode('manual')" id="manualBtn">
+                    <i class="bi bi-keyboard"></i> Manual
+                </button>
+            </div>
+            
+            <!-- Camera Status -->
+            <div id="cameraStatus" class="camera-status" style="display: none;"></div>
+            
+            <!-- Camera Scanner -->
+            <div class="camera-section" id="cameraSection">
+                <div id="qr-reader"></div>
+                <p class="text-muted mt-2">Position the QR code within the camera frame</p>
+            </div>
+            
+            <!-- Manual Input -->
+            <div class="manual-input" id="manualSection">
+                <form id="scanForm">
+                    {% csrf_token %}
+                    <input type="text" 
+                           id="ticketId" 
+                           class="ticket-input" 
+                           placeholder="Enter Ticket ID or scan QR code" 
+                           autocomplete="off">
+                    <button type="submit" class="scan-btn" id="scanBtn">
+                        <i class="bi bi-upc-scan"></i> Scan Ticket
+                        <span class="spinner-border spinner-border-sm loading-spinner" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Scan Result -->
+            <div id="scanResult" class="scan-result">
+                <div id="resultMessage"></div>
+                <div id="ticketInfo" class="ticket-info" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Recent Scans -->
+        {% if recent_scans %}
+        <div class="stats-section">
+            <h4 class="mb-3">
+                <img src="/media/qr_codes/Logo.png" alt="Logo" style="width: 20px; height: 20px; margin-right: 8px;">
+                Recent Scans
+            </h4>
+            <div class="recent-scans">
+                {% for scan in recent_scans %}
+                <div class="recent-scan-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ scan.match.title }}</strong><br>
+                            <small class="text-muted">{{ scan.user.get_full_name|default:scan.user.username }} - {{ scan.ticket_category.name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">{{ scan.scanned_at|date:"H:i" }}</small><br>
+                            <img src="/media/qr_codes/Logo.png" alt="Logo" style="width: 16px; height: 16px;" class="me-1">
+                            <span class="text-success">Scanned</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let html5QrcodeScanner = null;
+        let currentMode = 'camera';
+        let isInitialized = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start with camera mode by default
+            initializeScanner();
+            setupManualForm();
+        });
+        
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update button states
+            document.getElementById('cameraBtn').classList.toggle('active', mode === 'camera');
+            document.getElementById('manualBtn').classList.toggle('active', mode === 'manual');
+            
+            // Show/hide sections
+            document.getElementById('cameraSection').style.display = mode === 'camera' ? 'block' : 'none';
+            document.getElementById('manualSection').style.display = mode === 'manual' ? 'block' : 'none';
+            
+            if (mode === 'camera') {
+                // Always reinitialize camera when switching to camera mode
+                setTimeout(() => {
+                    initializeScanner();
+                }, 100); // Small delay to ensure DOM is updated
+            } else {
+                stopScanner();
+                setTimeout(() => {
+                    document.getElementById('ticketId').focus();
+                }, 100);
+            }
+        }
+        
+        function initializeScanner() {
+            // Stop any existing scanner first
+            if (html5QrcodeScanner) {
+                stopScanner();
+            }
+            
+            showCameraStatus('Initializing camera...', 'success');
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+                disableFlip: false,
+                rememberLastUsedCamera: true
+            };
+            
+            html5QrcodeScanner = new Html5Qrcode("qr-reader");
+            
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    console.log('Available cameras:', devices);
+                    
+                    // Use back camera if available, otherwise use first camera
+                    const backCamera = devices.find(device => 
+                        device.label.toLowerCase().includes('back') || 
+                        device.label.toLowerCase().includes('rear') ||
+                        device.label.toLowerCase().includes('environment')
+                    );
+                    
+                    const cameraId = backCamera ? backCamera.id : devices[0].id;
+                    console.log('Using camera:', cameraId);
+                    
+                    html5QrcodeScanner.start(
+                        cameraId,
+                        config,
+                        onScanSuccess,
+                        onScanFailure
+                    ).then(() => {
+                        showCameraStatus('Camera ready - Point at QR code', 'success');
+                        isInitialized = true;
+                    }).catch(err => {
+                        console.error('Error starting camera:', err);
+                        showCameraStatus('Failed to start camera: ' + err.message, 'error');
+                    });
+                } else {
+                    showCameraStatus('No cameras found on this device', 'error');
+                }
+            }).catch(err => {
+                console.error('Camera access error:', err);
+                if (err.name === 'NotAllowedError') {
+                    showCameraStatus('Camera access denied. Please allow camera access and refresh.', 'error');
+                } else if (err.name === 'NotFoundError') {
+                    showCameraStatus('No camera found on this device', 'error');
+                } else {
+                    showCameraStatus('Camera error: ' + err.message, 'error');
+                }
+            });
+        }
+        
+        function stopScanner() {
+            if (html5QrcodeScanner && isInitialized) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    isInitialized = false;
+                    console.log('Camera stopped successfully');
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
+                    isInitialized = false;
+                });
+            }
+            hideCameraStatus();
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log('QR Code detected:', decodedText);
+            
+            // Extract ticket ID from system-generated QR code
+            let ticketId = null;
+            
+            // Check if it's our system format: "Ticket ID: {uuid}"
+            if (decodedText.includes('Ticket ID:')) {
+                const lines = decodedText.split('\n');
+                const ticketIdLine = lines.find(line => line.trim().startsWith('Ticket ID:'));
+                if (ticketIdLine) {
+                    ticketId = ticketIdLine.replace('Ticket ID:', '').trim();
+                }
+            } else {
+                // If it's just a plain ticket ID (UUID format)
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (uuidRegex.test(decodedText.trim())) {
+                    ticketId = decodedText.trim();
+                } else {
+                    // Try to extract UUID from any text
+                    const uuidMatch = decodedText.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+                    if (uuidMatch) {
+                        ticketId = uuidMatch[0];
+                    }
+                }
+            }
+            
+            if (ticketId) {
+                console.log('Extracted ticket ID:', ticketId);
+                showCameraStatus('QR Code detected! Processing...', 'success');
+                
+                // Brief pause to show detection feedback
+                setTimeout(() => {
+                    scanTicket(ticketId);
+                }, 500);
+            } else {
+                console.log('Could not extract ticket ID from QR code');
+                showCameraStatus('Invalid QR code format. Please scan a valid ticket.', 'error');
+                
+                // Clear error after 3 seconds and resume scanning
+                setTimeout(() => {
+                    if (currentMode === 'camera') {
+                        showCameraStatus('Camera ready - Point at QR code', 'success');
+                    }
+                }, 3000);
+            }
+        }
+        
+        function onScanFailure(error) {
+            // Handle scan failure silently - this is called frequently during scanning
+            // Only log actual errors, not normal scanning attempts
+            if (error && !error.includes('No QR code found')) {
+                console.log('Scan attempt:', error);
+            }
+        }
+        
+        function showCameraStatus(message, type) {
+            const statusDiv = document.getElementById('cameraStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `camera-status camera-${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        function hideCameraStatus() {
+            document.getElementById('cameraStatus').style.display = 'none';
+        }
+        
+        function setupManualForm() {
+            const scanForm = document.getElementById('scanForm');
+            const ticketIdInput = document.getElementById('ticketId');
+            
+            scanForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const ticketId = ticketIdInput.value.trim();
+                if (!ticketId) {
+                    showError('Please enter a ticket ID');
+                    return;
+                }
+                
+                scanTicket(ticketId);
+            });
+        }
+        
+        function scanTicket(ticketId) {
+            const scanBtn = document.getElementById('scanBtn');
+            const loadingSpinner = document.querySelector('.loading-spinner');
+            const scanResult = document.getElementById('scanResult');
+            
+            // Show loading state
+            if (scanBtn) {
+                scanBtn.disabled = true;
+                if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
+            }
+            scanResult.style.display = 'none';
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch('/scan-ticket/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    ticket_id: ticketId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(data.message, data.ticket_info);
+                    // Clear manual input if visible
+                    const ticketIdInput = document.getElementById('ticketId');
+                    if (ticketIdInput) {
+                        ticketIdInput.value = '';
+                    }
+                    
+                    // If in camera mode, resume scanning after showing success
+                    if (currentMode === 'camera') {
+                        setTimeout(() => {
+                            showCameraStatus('Camera ready - Point at QR code', 'success');
+                        }, 2000);
+                    }
+                    
+                    // Refresh page after 4 seconds to update stats
+                    setTimeout(() => {
+                        location.reload();
+                    }, 4000);
+                } else {
+                    showError(data.error);
+                    
+                    // If in camera mode, resume scanning after showing error
+                    if (currentMode === 'camera') {
+                        setTimeout(() => {
+                            showCameraStatus('Camera ready - Point at QR code', 'success');
+                        }, 3000);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Network error. Please try again.');
+                
+                // If in camera mode, resume scanning after showing error
+                if (currentMode === 'camera') {
+                    setTimeout(() => {
+                        showCameraStatus('Camera ready - Point at QR code', 'success');
+                    }, 3000);
+                }
+            })
+            .finally(() => {
+                // Hide loading state
+                if (scanBtn) {
+                    scanBtn.disabled = false;
+                    if (loadingSpinner) loadingSpinner.style.display = 'none';
+                }
+            });
+        }
+        
+        function showSuccess(message, ticketData) {
+            const scanResult = document.getElementById('scanResult');
+            const resultMessage = document.getElementById('resultMessage');
+            const ticketInfo = document.getElementById('ticketInfo');
+            
+            scanResult.className = 'scan-result scan-success';
+            resultMessage.innerHTML = '<strong>✓ ' + message + '</strong>';
+            
+            if (ticketData) {
+                ticketInfo.innerHTML = `
+                    <strong>Ticket Details:</strong><br>
+                    <strong>Match:</strong> ${ticketData.match}<br>
+                    <strong>Holder:</strong> ${ticketData.user}<br>
+                    <strong>Category:</strong> ${ticketData.category}<br>
+                    <strong>Quantity:</strong> ${ticketData.quantity}<br>
+                    <strong>Scanned:</strong> ${ticketData.scanned_at}
+                `;
+                ticketInfo.style.display = 'block';
+            } else {
+                ticketInfo.style.display = 'none';
+            }
+            
+            scanResult.style.display = 'block';
+        }
+        
+        function showError(message) {
+            const scanResult = document.getElementById('scanResult');
+            const resultMessage = document.getElementById('resultMessage');
+            const ticketInfo = document.getElementById('ticketInfo');
+            
+            scanResult.className = 'scan-result scan-error';
+            resultMessage.innerHTML = '<strong>✗ ' + message + '</strong>';
+            ticketInfo.style.display = 'none';
+            scanResult.style.display = 'block';
+        }
+        
+        // Clean up when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            stopScanner();
+        });
+        
+        // Handle visibility change (when user switches tabs/apps)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, stop scanner to save resources
+                if (currentMode === 'camera' && isInitialized) {
+                    stopScanner();
+                }
+            } else {
+                // Page is visible again, restart scanner if in camera mode
+                if (currentMode === 'camera' && !isInitialized) {
+                    setTimeout(() => {
+                        initializeScanner();
+                    }, 500);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

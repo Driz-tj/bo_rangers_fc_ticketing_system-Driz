@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bo Rangers FC{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #fff;
+            min-height: 100vh;
+            font-family: 'Inter', 'Roboto', 'Open Sans', Arial, sans-serif;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #28a745 !important;
+        }
+        .hero-section {
+            background: linear-gradient(rgba(34,34,34,0.7), rgba(34,34,34,0.7)), url('/media/qr_codes/stadium.jpg') center bottom/cover no-repeat;
+            color: white;
+            padding: 4rem 0;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        .footer {
+            background-color: #212529;
+            color: white;
+            padding: 2rem 0;
+        }
+        .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    {% if user.is_authenticated %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <div class="container">
+                    <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                        <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 60px; width: 60px; object-fit: contain; margin-right: 10px;">
+                        Bo Rangers FC
+                    </a>
+                    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav mx-auto">
+                            {% if not user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'home' %}">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'fixtures' %}">Fixtures</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'news_list' %}">News</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                        <i class="bi bi-person"></i> Profile
+                                    </a></li>
+                                    {% if user.is_staff %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                                            <i class="bi bi-speedometer2"></i> Admin Dashboard
+                                        </a></li>
+                                    {% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left;">
+                                                <i class="bi bi-box-arrow-right"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+    {% else %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                    <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 60px; width: 60px; object-fit: contain; margin-right: 10px;">
+                    Bo Rangers FC
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'fixtures' %}">Fixtures</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'news_list' %}">News</a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    {% endif %}
+    
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 48px; width: 48px; object-fit: contain; margin-right: 8px;"> Bo Rangers FC</h5>
+                    <p>Your premier football club experience. Book tickets, stay updated with news, and never miss a match!</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'fixtures' %}" class="text-light text-decoration-none">Fixtures</a></li>
+                        <li><a href="{% url 'news_list' %}" class="text-light text-decoration-none">News</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Follow Us</h6>
+                    <div>
+                        <a href="#" class="text-light me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-light me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-light me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="text-light">
+            <div class="text-center">
+                <p>&copy; 2024 Bo Rangers FC. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for admin dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

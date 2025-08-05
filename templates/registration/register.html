@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);">
+                    <h3 class="mb-0">
+                        Join Bo Rangers FC
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="width: 48px; height: 48px;">
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h5 class="mt-2">Create Your Account</h5>
+                        <p class="text-muted">Join thousands of Bo Rangers FC fans</p>
+                    </div>
+
+                    <form method="post" id="registerForm">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                Username *
+                            </label>
+                            <input type="text" class="form-control" id="{{ form.username.id_for_label }}" 
+                                   name="{{ form.username.name }}" value="{{ form.username.value|default:'' }}" required>
+                            <div class="form-text">150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                Email Address
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="your.email@example.com">
+                            <div class="form-text">Optional, but recommended for account recovery.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">
+                                Phone Number
+                            </label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="e.g., 232XXXXXXXX">
+                            <div class="form-text">Optional, for mobile money payments and notifications.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                Password *
+                            </label>
+                            <input type="password" class="form-control" id="{{ form.password1.id_for_label }}" 
+                                   name="{{ form.password1.name }}" required>
+                            <div class="form-text">
+                                <ul class="small mb-0">
+                                    <li>At least 8 characters long</li>
+                                    <li>Can't be too similar to your other personal information</li>
+                                    <li>Can't be a commonly used password</li>
+                                    <li>Can't be entirely numeric</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                Confirm Password *
+                            </label>
+                            <input type="password" class="form-control" id="{{ form.password2.id_for_label }}" 
+                                   name="{{ form.password2.name }}" required>
+                            <div class="form-text">Enter the same password as before, for verification.</div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                I agree to the <a href="#" class="text-success">Terms of Service</a> and 
+                                <a href="#" class="text-success">Privacy Policy</a>
+                            </label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                Subscribe to match updates and club news
+                            </label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-person-plus"></i> Create Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-2">Already have an account?</p>
+                        <a href="{% url 'login' %}" class="btn btn-outline-success">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits of joining -->
+            <div class="card mt-4 border-0">
+                <div class="card-body">
+                    <h6 class="text-center text-muted mb-3">Member Benefits</h6>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <p class="small mt-1 mb-0">Priority Ticket Booking</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <p class="small mt-1 mb-0">Match Notifications</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="small mt-1 mb-0">Exclusive Content</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="small mt-1 mb-0">Member Rewards</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Form validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const password1 = document.getElementById('{{ form.password1.id_for_label }}').value;
+        const password2 = document.getElementById('{{ form.password2.id_for_label }}').value;
+        const agreeTerms = document.getElementById('agreeTerms').checked;
+        
+        if (password1 !== password2) {
+            e.preventDefault();
+            alert('Passwords do not match. Please try again.');
+            return;
+        }
+        
+        if (!agreeTerms) {
+            e.preventDefault();
+            alert('Please agree to the Terms of Service and Privacy Policy to continue.');
+            return;
+        }
+        
+        if (password1.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters long.');
+            return;
+        }
+    });
+
+    // Phone number formatting
+    document.getElementById('phone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        
+        // Format as Sierra Leone phone number
+        if (value.length > 0) {
+            if (value.startsWith('232')) {
+                // Already has country code
+                value = value.substring(0, 12);
+            } else if (value.startsWith('0')) {
+                // Remove leading 0 and add country code
+                value = '232' + value.substring(1);
+                value = value.substring(0, 12);
+            } else if (value.length > 0) {
+                // Add country code
+                value = '232' + value;
+                value = value.substring(0, 12);
+            }
+        }
+        
+        e.target.value = value;
+    });
+
+    // Real-time password validation
+    const password1Input = document.getElementById('{{ form.password1.id_for_label }}');
+    const password2Input = document.getElementById('{{ form.password2.id_for_label }}');
+    
+    function validatePasswords() {
+        if (password1Input.value && password2Input.value) {
+            if (password1Input.value === password2Input.value) {
+                password2Input.classList.remove('is-invalid');
+                password2Input.classList.add('is-valid');
+            } else {
+                password2Input.classList.remove('is-valid');
+                password2Input.classList.add('is-invalid');
+            }
+        }
+    }
+    
+    password1Input.addEventListener('input', validatePasswords);
+    password2Input.addEventListener('input', validatePasswords);
+</script>
+{% endblock %}
+{% endblock %}

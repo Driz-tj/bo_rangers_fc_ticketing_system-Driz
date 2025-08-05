@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background: linear-gradient(rgba(34,34,34,0.7), rgba(34,34,34,0.7)), url('/media/qr_codes/stadium.jpg') center bottom/cover no-repeat; padding: 8rem 0;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Welcome to Bo Rangers FC</h1>
+                <p class="lead mb-4">Experience the thrill of football with Sierra Leone's premier club. Book your tickets now and be part of the action!</p>
+                <a href="{% url 'fixtures' %}" class="btn btn-light btn-lg me-3">
+                    <i class="bi bi-calendar-event"></i> View Fixtures
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-person"></i> My Tickets
+                    </a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-person-plus"></i> Join Now
+                    </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 340px; width: 340px; object-fit: contain; opacity: 0.7;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Upcoming Matches -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">
+                    <i class="bi bi-calendar-event text-success"></i> Upcoming Matches
+                </h2>
+            </div>
+        </div>
+        
+        {% if upcoming_matches %}
+            <div class="row">
+                {% for match in upcoming_matches %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card card-hover h-100 shadow-sm">
+                            <div class="card-header bg-success text-white text-center">
+                                <h6 class="mb-0">Matchday {{ match.matchday }}</h6>
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="d-flex align-items-center justify-content-center mb-3">
+                                    <div class="text-center pe-3">
+                                        <h6 class="fw-bold mb-2">{{ match.home_team }}</h6>
+                                        {% if match.home_team_logo %}
+                                            <img src="{{ match.home_team_logo.url }}" alt="{{ match.home_team }}" style="height: 40px; width: 40px; object-fit: contain;">
+                                        {% else %}
+                                            <img src="/media/qr_codes/Logo.png" alt="{{ match.home_team }}" style="height: 40px; width: 40px; object-fit: contain;">
+                                        {% endif %}
+                                    </div>
+                                    <div class="mx-2">
+                                        <div class="h6 fw-bold mb-1">VS</div>
+                                    </div>
+                                    <div class="text-center ps-3">
+                                        <h6 class="fw-bold mb-2">{{ match.opponent }}</h6>
+                                        {% if match.opponent_logo %}
+                                            <img src="{{ match.opponent_logo.url }}" alt="{{ match.opponent }}" style="height: 40px; width: 40px; object-fit: contain;">
+                                        {% else %}
+                                            <div class="rounded p-2">
+                                                <i class="bi bi-shield-fill text-secondary" style="font-size: 2rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="card-text">
+                                    <i class="bi bi-geo-alt"></i> {{ match.venue }}<br>
+                                    <i class="bi bi-calendar"></i> {{ match.date|date:"D, M d" }}<br>
+                                    <i class="bi bi-clock"></i> {{ match.date|date:"H:i" }}
+                                </p>
+                                <span class="badge bg-success">{{ match.get_status_display }}</span>
+                            </div>
+                            <div class="card-footer text-center">
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'book_ticket' match.id %}" class="btn btn-primary">
+                                        <i class="bi bi-ticket-perforated"></i> Book Tickets
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                                        <i class="bi bi-box-arrow-in-right"></i> Login to Book
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'fixtures' %}" class="btn btn-outline-success btn-lg">
+                    <i class="bi bi-calendar-event"></i> View All Fixtures
+                </a>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p class="lead text-muted">No upcoming matches scheduled at the moment.</p>
+                <a href="{% url 'fixtures' %}" class="btn btn-outline-success">
+                    <i class="bi bi-calendar-event"></i> View All Fixtures
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Featured News -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">
+                    <i class="bi bi-newspaper text-success"></i> Latest News
+                </h2>
+            </div>
+        </div>
+        
+        {% if recent_news %}
+            <div class="row">
+                {% for article in recent_news %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card card-hover h-100 shadow-sm">
+                            {% if article.image %}
+                                <img src="{{ article.image.url }}" class="card-img-top" alt="{{ article.title }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="bi bi-newspaper text-white" style="font-size: 3rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ article.title }}</h5>
+                                <p class="card-text">{{ article.body|truncatewords:20 }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ article.date_posted|date:"M d, Y" }}
+                                    <span class="badge bg-secondary ms-2">{{ article.get_category_display }}</span>
+                                </small>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'news_detail' article.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-arrow-right"></i> Read More
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'news_list' %}" class="btn btn-outline-success btn-lg">
+                    <i class="bi bi-newspaper"></i> View All News
+                </a>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p class="lead text-muted">No news articles available at the moment.</p>
+                <a href="{% url 'news_list' %}" class="btn btn-outline-success">
+                    <i class="bi bi-newspaper"></i> View All News
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-success text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Join the Bo Rangers Family!</h2>
+        <p class="lead mb-4">Experience the thrill of live football. Book your tickets now and be part of the action!</p>
+        <a href="{% url 'fixtures' %}" class="btn btn-warning btn-lg">
+            <i class="bi bi-ticket-perforated"></i> Book Tickets Now
+        </a>
+    </div>
+</section>
+{% endblock %}

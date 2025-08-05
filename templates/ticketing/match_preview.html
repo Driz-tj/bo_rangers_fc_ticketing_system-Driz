@@ -1,0 +1,1541 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ match.title }} vs {{ match.opponent }} - Match Preview{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Match Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-center mb-3">
+                {% if match.home_team_logo %}
+                    <img src="{{ match.home_team_logo.url }}" alt="{{ match.home_team }} Logo" style="height: 48px; width: 48px; object-fit: contain; margin-right: 15px;">
+                {% else %}
+                    <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC Logo" style="height: 48px; width: 48px; object-fit: contain; margin-right: 15px;">
+                {% endif %}
+                <h1 class="text-center mb-0" style="font-weight:700; letter-spacing:1px;">
+                    {{ match.home_team }} vs {{ match.opponent }}
+                </h1>
+            </div>
+            <div class="text-center">
+                <span class="badge bg-secondary fs-6">{{ match.venue }}</span>
+                <span class="badge bg-info fs-6">{{ match.date|date:"D, M d, Y" }} at {{ match.date|date:"H:i" }}</span>
+                <span class="badge bg-primary fs-6">Matchday {{ match.matchday }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if match.is_completed %}
+        <!-- Completed Match - Full Details -->
+        <div class="row">
+            <!-- Match Result Card -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #198754 0%, #FFD700 100%);">
+                    <div class="card-body text-center py-5">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">{{ match.home_team }}</h3>
+                                {% if match.home_team_logo %}
+                                    <img src="{{ match.home_team_logo.url }}" alt="{{ match.home_team }}" style="height: 80px; width: 80px; object-fit: contain;">
+                                {% else %}
+                                    <img src="/media/qr_codes/Logo.png" alt="{{ match.home_team }}" style="height: 80px; width: 80px; object-fit: contain;">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="display-1 fw-bold text-white">{{ match.score_display }}</div>
+                                <div class="h4 text-white mb-3">
+                                    {% if match.result == 'Win' %}
+                                        <span class="badge bg-success fs-5">🏆 WIN</span>
+                                    {% elif match.result == 'Loss' %}
+                                        <span class="badge bg-danger fs-5">❌ LOSS</span>
+                                    {% elif match.result == 'Draw' %}
+                                        <span class="badge bg-warning fs-5">🤝 DRAW</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary fs-5">📊 COMPLETED</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-white">
+                                    <i class="bi bi-calendar-event"></i> {{ match.date|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">{{ match.opponent }}</h3>
+                                {% if match.opponent_logo %}
+                                    <img src="{{ match.opponent_logo.url }}" alt="{{ match.opponent }}" style="height: 80px; width: 80px; object-fit: contain;">
+                                {% else %}
+                                    <div class="bg-white rounded p-3">
+                                        <i class="bi bi-shield-fill text-secondary" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Summary -->
+            {% if match.match_summary %}
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-file-text"></i> Match Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead mb-0">{{ match.match_summary }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Match Statistics -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Match Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Possession -->
+                            {% if match.possession_home and match.possession_away %}
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold">{{ match.home_team }}</span>
+                                    <span class="fw-bold">{{ match.opponent }}</span>
+                                </div>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-success" style="width: {{ match.possession_home }}%">
+                                        {{ match.possession_home }}%
+                                    </div>
+                                    <div class="progress-bar bg-warning" style="width: {{ match.possession_away }}%">
+                                        {{ match.possession_away }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">Possession</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Shots -->
+                            {% if match.shots_home and match.shots_away %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">{{ match.shots_home }}</span>
+                                    <span class="text-muted">Shots</span>
+                                    <span class="fw-bold">{{ match.shots_away }}</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    {% if match.shots_home and match.shots_away %}
+                                        {% widthratio match.shots_home match.shots_home|add:match.shots_away 100 as home_percent %}
+                                        {% widthratio match.shots_away match.shots_home|add:match.shots_away 100 as away_percent %}
+                                        <div class="progress-bar bg-success" style="width: {{ home_percent }}%"></div>
+                                        <div class="progress-bar bg-warning" style="width: {{ away_percent }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Shots on Target -->
+                            {% if match.shots_on_target_home and match.shots_on_target_away %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">{{ match.shots_on_target_home }}</span>
+                                    <span class="text-muted">On Target</span>
+                                    <span class="fw-bold">{{ match.shots_on_target_away }}</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    {% if match.shots_on_target_home and match.shots_on_target_away %}
+                                        {% widthratio match.shots_on_target_home match.shots_on_target_home|add:match.shots_on_target_away 100 as home_percent %}
+                                        {% widthratio match.shots_on_target_away match.shots_on_target_home|add:match.shots_on_target_away 100 as away_percent %}
+                                        <div class="progress-bar bg-success" style="width: {{ home_percent }}%"></div>
+                                        <div class="progress-bar bg-warning" style="width: {{ away_percent }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Corners -->
+                            {% if match.corners_home and match.corners_away %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">{{ match.corners_home }}</span>
+                                    <span class="text-muted">Corners</span>
+                                    <span class="fw-bold">{{ match.corners_away }}</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    {% if match.corners_home and match.corners_away %}
+                                        {% widthratio match.corners_home match.corners_home|add:match.corners_away 100 as home_percent %}
+                                        {% widthratio match.corners_away match.corners_home|add:match.corners_away 100 as away_percent %}
+                                        <div class="progress-bar bg-success" style="width: {{ home_percent }}%"></div>
+                                        <div class="progress-bar bg-warning" style="width: {{ away_percent }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Fouls -->
+                            {% if match.fouls_home and match.fouls_away %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">{{ match.fouls_home }}</span>
+                                    <span class="text-muted">Fouls</span>
+                                    <span class="fw-bold">{{ match.fouls_away }}</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    {% if match.fouls_home and match.fouls_away %}
+                                        {% widthratio match.fouls_home match.fouls_home|add:match.fouls_away 100 as home_percent %}
+                                        {% widthratio match.fouls_away match.fouls_home|add:match.fouls_away 100 as away_percent %}
+                                        <div class="progress-bar bg-success" style="width: {{ home_percent }}%"></div>
+                                        <div class="progress-bar bg-warning" style="width: {{ away_percent }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Cards -->
+                            {% if match.yellow_cards_home or match.yellow_cards_away or match.red_cards_home or match.red_cards_away %}
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-warning">🟨 {{ match.yellow_cards_home|default:0 }}</span>
+                                            <span class="text-danger">🟥 {{ match.red_cards_home|default:0 }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ match.home_team }}</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-warning">🟨 {{ match.yellow_cards_away|default:0 }}</span>
+                                            <span class="text-danger">🟥 {{ match.red_cards_away|default:0 }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ match.opponent }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Events Timeline -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Match Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if match_events %}
+                            <div class="timeline">
+                                {% for event in match_events %}
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="timeline-marker me-3">
+                                            <span class="badge {% if event.team == 'home' %}bg-success{% else %}bg-warning{% endif %}">
+                                                {{ event.minute }}'
+                                            </span>
+                                        </div>
+                                        <div class="timeline-content flex-grow-1">
+                                            <div class="d-flex align-items-center">
+                                                {% if event.event_type == 'goal' %}
+                                                    <span class="me-2">⚽</span>
+                                                {% elif event.event_type == 'yellow_card' %}
+                                                    <span class="me-2">🟨</span>
+                                                {% elif event.event_type == 'red_card' %}
+                                                    <span class="me-2">🟥</span>
+                                                {% elif event.event_type == 'substitution' %}
+                                                    <span class="me-2">🔄</span>
+                                                {% else %}
+                                                    <span class="me-2">📝</span>
+                                                {% endif %}
+                                                <span class="fw-bold">{{ event.player_name }}</span>
+                                            </div>
+                                            <small class="text-muted">{{ event.get_event_type_display }}</small>
+                                            {% if event.description %}
+                                                <div class="small text-muted mt-1">{{ event.description }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">No match events recorded</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Highlights -->
+            {% if match.highlights %}
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-star"></i> Match Highlights</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead mb-0">{{ match.highlights }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Match Details -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Match Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% if match.attendance %}
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+                                    <div class="fw-bold">{{ match.attendance|floatformat:0 }}</div>
+                                    <small class="text-muted">Attendance</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if match.weather %}
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <i class="bi bi-cloud-sun text-info" style="font-size: 2rem;"></i>
+                                    <div class="fw-bold">{{ match.weather }}</div>
+                                    <small class="text-muted">Weather</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if match.referee %}
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <i class="bi bi-person-badge text-success" style="font-size: 2rem;"></i>
+                                    <div class="fw-bold">{{ match.referee }}</div>
+                                    <small class="text-muted">Referee</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="col-md-3 mb-3">
+                                <div class="text-center">
+                                    <i class="bi bi-calendar-event text-danger" style="font-size: 2rem;"></i>
+                                    <div class="fw-bold">{{ match.date|date:"M d" }}</div>
+                                    <small class="text-muted">Date</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    {% elif match.status == 'live' %}
+        <!-- Live Match - Real-time Updates -->
+        <div class="row">
+            <!-- Live Match Header -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);">
+                    <div class="card-body text-center py-5">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">Bo Rangers FC</h3>
+                                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="height: 80px; width: 80px; object-fit: contain;">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="display-1 fw-bold text-white">{{ match.score_display|default:"0 - 0" }}</div>
+                                <div class="h4 text-white mb-3">
+                                    <span class="badge bg-danger fs-5 animate-pulse">🔴 LIVE</span>
+                                </div>
+                                <div class="text-white">
+                                    <i class="bi bi-clock"></i> <span id="elapsed-time">45'</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">{{ match.opponent }}</h3>
+                                {% if match.opponent_logo %}
+                                    <img src="{{ match.opponent_logo.url }}" alt="{{ match.opponent }}" style="height: 80px; width: 80px; object-fit: contain;">
+                                {% else %}
+                                    <div class="bg-white rounded p-3">
+                                        <i class="bi bi-shield-fill text-secondary" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Match Status -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-broadcast"></i> Live Match Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="live-indicator">
+                                    <div class="pulse-dot"></div>
+                                    <span class="fw-bold text-danger">LIVE</span>
+                                </div>
+                                <small class="text-muted">Match Status</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="fw-bold" id="current-minute">45'</div>
+                                <small class="text-muted">Elapsed Time</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="fw-bold" id="match-phase">Second Half</div>
+                                <small class="text-muted">Match Phase</small>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="fw-bold" id="stoppage-time">+2'</div>
+                                <small class="text-muted">Stoppage Time</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Statistics -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Live Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Live Possession -->
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold">Bo Rangers FC</span>
+                                    <span class="fw-bold">{{ match.opponent }}</span>
+                                </div>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar bg-success animate-progress" style="width: 52%">
+                                        52%
+                                    </div>
+                                    <div class="progress-bar bg-warning animate-progress" style="width: 48%">
+                                        48%
+                                    </div>
+                                </div>
+                                <small class="text-muted">Live Possession</small>
+                            </div>
+
+                            <!-- Live Shots -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold" id="home-shots">8</span>
+                                    <span class="text-muted">Shots</span>
+                                    <span class="fw-bold" id="away-shots">5</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar bg-success animate-progress" style="width: 62%"></div>
+                                    <div class="progress-bar bg-warning animate-progress" style="width: 38%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Live Shots on Target -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold" id="home-shots-target">3</span>
+                                    <span class="text-muted">On Target</span>
+                                    <span class="fw-bold" id="away-shots-target">2</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar bg-success animate-progress" style="width: 60%"></div>
+                                    <div class="progress-bar bg-warning animate-progress" style="width: 40%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Live Corners -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold" id="home-corners">4</span>
+                                    <span class="text-muted">Corners</span>
+                                    <span class="fw-bold" id="away-corners">3</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar bg-success animate-progress" style="width: 57%"></div>
+                                    <div class="progress-bar bg-warning animate-progress" style="width: 43%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Live Fouls -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold" id="home-fouls">6</span>
+                                    <span class="text-muted">Fouls</span>
+                                    <span class="fw-bold" id="away-fouls">8</span>
+                                </div>
+                                <div class="progress" style="height: 15px;">
+                                    <div class="progress-bar bg-success animate-progress" style="width: 43%"></div>
+                                    <div class="progress-bar bg-warning animate-progress" style="width: 57%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Live Cards -->
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-warning">🟨 <span id="home-yellow">1</span></span>
+                                            <span class="text-danger">🟥 <span id="home-red">0</span></span>
+                                        </div>
+                                        <small class="text-muted">Bo Rangers FC</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-warning">🟨 <span id="away-yellow">2</span></span>
+                                            <span class="text-danger">🟥 <span id="away-red">0</span></span>
+                                        </div>
+                                        <small class="text-muted">{{ match.opponent }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Commentary Feed -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Live Commentary</h5>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div class="live-commentary" id="live-commentary">
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-danger me-2">45'</span>
+                                    <div class="flex-grow-1">
+                                        <strong>GOAL! ⚽</strong>
+                                        <p class="mb-1 small">Mohamed Kamara scores a brilliant header from a corner kick! Bo Rangers FC take the lead!</p>
+                                        <small class="text-muted">2 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-warning me-2">43'</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Yellow Card 🟨</strong>
+                                        <p class="mb-1 small">David Kargbo receives a yellow card for a late tackle on our striker.</p>
+                                        <small class="text-muted">4 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-info me-2">40'</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Substitution 🔄</strong>
+                                        <p class="mb-1 small">Ahmed Fofanah comes on to replace the injured midfielder. Tactical change by the coach.</p>
+                                        <small class="text-muted">7 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-success me-2">35'</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Great Save! 🧤</strong>
+                                        <p class="mb-1 small">Our goalkeeper makes an incredible save to deny the opposition a certain goal!</p>
+                                        <small class="text-muted">12 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-primary me-2">30'</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Corner Kick 🏁</strong>
+                                        <p class="mb-1 small">Bo Rangers FC win a corner. The team is looking dangerous from set pieces today.</p>
+                                        <small class="text-muted">17 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Match Timeline -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Live Match Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline live-timeline">
+                            <div class="timeline-item mb-3 live-event">
+                                <div class="d-flex align-items-center">
+                                    <div class="timeline-marker me-3">
+                                        <span class="badge bg-danger animate-pulse">45'</span>
+                                    </div>
+                                    <div class="timeline-content flex-grow-1">
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">⚽</span>
+                                            <span class="fw-bold">Mohamed Kamara</span>
+                                        </div>
+                                        <small class="text-muted">Goal - Brilliant header from corner</small>
+                                        <div class="small text-success mt-1">GOAL! Bo Rangers FC 1-0 {{ match.opponent }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="timeline-marker me-3">
+                                        <span class="badge bg-warning">43'</span>
+                                    </div>
+                                    <div class="timeline-content flex-grow-1">
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">🟨</span>
+                                            <span class="fw-bold">David Kargbo</span>
+                                        </div>
+                                        <small class="text-muted">Yellow Card - Late tackle</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="timeline-marker me-3">
+                                        <span class="badge bg-info">40'</span>
+                                    </div>
+                                    <div class="timeline-content flex-grow-1">
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">🔄</span>
+                                            <span class="fw-bold">Ahmed Fofanah</span>
+                                        </div>
+                                        <small class="text-muted">Substitution - Injury replacement</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Fan Reactions -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-emoji-heart-eyes"></i> Live Fan Reactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <div class="h2 text-success mb-2">🎉</div>
+                                    <div class="fw-bold text-success">Excited</div>
+                                    <small class="text-muted">Fans are thrilled with the goal!</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <div class="h2 text-warning mb-2">😤</div>
+                                    <div class="fw-bold text-warning">Nervous</div>
+                                    <small class="text-muted">Close game, anything can happen</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="text-center">
+                                    <div class="h2 text-info mb-2">🔥</div>
+                                    <div class="fw-bold text-info">Confident</div>
+                                    <small class="text-muted">Team is playing well</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    {% else %}
+        <!-- Upcoming Match - Pre-match Preview -->
+        <div class="row">
+            <!-- Match Header -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);">
+                    <div class="card-body text-center py-5">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">Bo Rangers FC</h3>
+                                <img src="/media/qr_codes/Logo.png" alt="Bo Rangers FC" style="height: 80px; width: 80px; object-fit: contain;">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h2 text-white mb-3">VS</div>
+                                <div class="h4 text-white mb-3">
+                                    <span class="badge bg-primary fs-5">📅 UPCOMING</span>
+                                </div>
+                                <div class="text-white">
+                                    <i class="bi bi-calendar-event"></i> {{ match.date|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h3 class="fw-bold text-white">{{ match.opponent }}</h3>
+                                {% if match.opponent_logo %}
+                                    <img src="{{ match.opponent_logo.url }}" alt="{{ match.opponent }}" style="height: 80px; width: 80px; object-fit: contain;">
+                                {% else %}
+                                    <div class="bg-white rounded p-3">
+                                        <i class="bi bi-shield-fill text-secondary" style="font-size: 3rem;"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Information -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Match Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Venue:</strong> {{ match.venue }}</p>
+                                <p><strong>Date:</strong> {{ match.date|date:"l, F d, Y" }}</p>
+                                <p><strong>Time:</strong> {{ match.date|date:"H:i" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Matchday:</strong> {{ match.matchday }}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="badge bg-primary">
+                                        {{ match.get_status_display }}
+                                    </span>
+                                </p>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'book_ticket' match.id %}" class="btn btn-success">
+                                    <i class="bi bi-ticket-perforated"></i> Book Tickets
+                                </a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login to Book Tickets
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Lineups and Formations -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-people"></i> Predicted Lineups & Formations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Bo Rangers FC Lineup -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="fw-bold text-success mb-3">Bo Rangers FC (4-3-3)</h6>
+                                <div class="formation-display">
+                                    <div class="row text-center">
+                                        <div class="col-12 mb-2">
+                                            <div class="player-card">
+                                                <strong>1. Mohamed Sesay</strong><br>
+                                                <small class="text-muted">Goalkeeper</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>2. John Kamara</strong><br>
+                                                <small class="text-muted">Right Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>4. David Conteh</strong><br>
+                                                <small class="text-muted">Center Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>5. Patrick Koroma</strong><br>
+                                                <small class="text-muted">Center Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>3. Ahmed Fofanah</strong><br>
+                                                <small class="text-muted">Left Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>6. Sulaiman Turay</strong><br>
+                                                <small class="text-muted">Defensive Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>8. Ibrahim Conteh</strong><br>
+                                                <small class="text-muted">Central Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>10. Mohamed Kamara</strong><br>
+                                                <small class="text-muted">Attacking Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>7. Samuel Bangura</strong><br>
+                                                <small class="text-muted">Right Wing</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>9. Michael Kargbo</strong><br>
+                                                <small class="text-muted">Striker</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-2">
+                                            <div class="player-card">
+                                                <strong>11. Fatima Sesay</strong><br>
+                                                <small class="text-muted">Left Wing</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Opponent Lineup -->
+                            <div class="col-md-6 mb-4">
+                                <h6 class="fw-bold text-warning mb-3">{{ match.opponent }} (4-4-2)</h6>
+                                <div class="formation-display">
+                                    <div class="row text-center">
+                                        <div class="col-12 mb-2">
+                                            <div class="player-card">
+                                                <strong>1. Opponent GK</strong><br>
+                                                <small class="text-muted">Goalkeeper</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>2. Opponent RB</strong><br>
+                                                <small class="text-muted">Right Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>4. Opponent CB1</strong><br>
+                                                <small class="text-muted">Center Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>5. Opponent CB2</strong><br>
+                                                <small class="text-muted">Center Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>3. Opponent LB</strong><br>
+                                                <small class="text-muted">Left Back</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>7. Opponent RM</strong><br>
+                                                <small class="text-muted">Right Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>6. Opponent CM1</strong><br>
+                                                <small class="text-muted">Central Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>8. Opponent CM2</strong><br>
+                                                <small class="text-muted">Central Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-3 mb-2">
+                                            <div class="player-card">
+                                                <strong>11. Opponent LM</strong><br>
+                                                <small class="text-muted">Left Mid</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <div class="player-card">
+                                                <strong>9. Opponent ST1</strong><br>
+                                                <small class="text-muted">Striker</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <div class="player-card">
+                                                <strong>10. Opponent ST2</strong><br>
+                                                <small class="text-muted">Striker</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expert Commentary -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-megaphone"></i> Expert Pre-match Commentary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="expert-commentary">
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <img src="/media/qr_codes/Logo.png" alt="Expert" style="height: 30px; width: 30px; object-fit: contain; margin-right: 10px;">
+                                    <div class="flex-grow-1">
+                                        <strong>Coach Analysis</strong>
+                                        <p class="mb-1 small">Bo Rangers FC will likely deploy their signature 4-3-3 formation, focusing on quick transitions and set-piece opportunities.</p>
+                                        <small class="text-muted">2 hours ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <img src="/media/qr_codes/Logo.png" alt="Expert" style="height: 30px; width: 30px; object-fit: contain; margin-right: 10px;">
+                                    <div class="flex-grow-1">
+                                        <strong>Tactical Preview</strong>
+                                        <p class="mb-1 small">Expect a high-pressing game from both teams. The midfield battle will be crucial in determining the outcome.</p>
+                                        <small class="text-muted">1 hour ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="commentary-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <img src="/media/qr_codes/Logo.png" alt="Expert" style="height: 30px; width: 30px; object-fit: contain; margin-right: 10px;">
+                                    <div class="flex-grow-1">
+                                        <strong>Key Players</strong>
+                                        <p class="mb-1 small">Mohamed Kamara's creativity and Michael Kargbo's finishing will be key for Bo Rangers FC's attacking success.</p>
+                                        <small class="text-muted">30 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Facts and Historical Stats -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Match Facts & Historical Stats</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Head-to-Head Record</h6>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="stat-card bg-success text-white p-3 rounded">
+                                            <div class="h4 mb-0">8</div>
+                                            <small>Bo Rangers Wins</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card bg-warning text-dark p-3 rounded">
+                                            <div class="h4 mb-0">3</div>
+                                            <small>Draws</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-card bg-danger text-white p-3 rounded">
+                                            <div class="h4 mb-0">2</div>
+                                            <small>{{ match.opponent }} Wins</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Recent Form</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Bo Rangers FC:</strong>
+                                        <div class="form-indicators">
+                                            <span class="badge bg-success">W</span>
+                                            <span class="badge bg-success">W</span>
+                                            <span class="badge bg-warning">D</span>
+                                            <span class="badge bg-success">W</span>
+                                            <span class="badge bg-danger">L</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>{{ match.opponent }}:</strong>
+                                        <div class="form-indicators">
+                                            <span class="badge bg-danger">L</span>
+                                            <span class="badge bg-success">W</span>
+                                            <span class="badge bg-warning">D</span>
+                                            <span class="badge bg-success">W</span>
+                                            <span class="badge bg-success">W</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Injury Updates and Team News -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Injury Updates & Team News</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="injury-updates">
+                            <div class="injury-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-danger me-2">⚠️</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Ahmed Fofanah</strong>
+                                        <p class="mb-1 small">Minor ankle injury - 75% chance to play</p>
+                                        <small class="text-muted">Updated 2 hours ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="injury-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-success me-2">✅</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Mohamed Kamara</strong>
+                                        <p class="mb-1 small">Fully fit and ready to start</p>
+                                        <small class="text-muted">Updated 1 hour ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="injury-item mb-3">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-warning me-2">❓</span>
+                                    <div class="flex-grow-1">
+                                        <strong>Patrick Koroma</strong>
+                                        <p class="mb-1 small">Late fitness test - 50% chance to play</p>
+                                        <small class="text-muted">Updated 30 minutes ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fan Predictions -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-people"></i> Fan Predictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="fan-predictions">
+                            <div class="prediction-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Bo Rangers FC Win</span>
+                                    <div class="progress flex-grow-1 mx-2" style="height: 20px;">
+                                        <div class="progress-bar bg-success" style="width: 65%">65%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="prediction-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>Draw</span>
+                                    <div class="progress flex-grow-1 mx-2" style="height: 20px;">
+                                        <div class="progress-bar bg-warning" style="width: 20%">20%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="prediction-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ match.opponent }} Win</span>
+                                    <div class="progress flex-grow-1 mx-2" style="height: 20px;">
+                                        <div class="progress-bar bg-danger" style="width: 15%">15%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3">
+                                <small class="text-muted">Based on 1,247 fan votes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tactical Preview -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Tactical Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-success">Bo Rangers FC Tactics</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle text-success"></i> High pressing from the front</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Quick transitions on counter-attacks</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Set-piece specialists</li>
+                                    <li><i class="bi bi-check-circle text-success"></i> Possession-based midfield</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-warning">{{ match.opponent }} Tactics</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check-circle text-warning"></i> Defensive counter-attacking</li>
+                                    <li><i class="bi bi-check-circle text-warning"></i> Physical aerial presence</li>
+                                    <li><i class="bi bi-check-circle text-warning"></i> Direct long-ball approach</li>
+                                    <li><i class="bi bi-check-circle text-warning"></i> Compact defensive shape</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="fw-bold">Key Battles</h6>
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="battle-card p-2 border rounded">
+                                            <strong>Midfield Control</strong><br>
+                                            <small class="text-muted">Mohamed Kamara vs Opponent CM</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="battle-card p-2 border rounded">
+                                            <strong>Aerial Duels</strong><br>
+                                            <small class="text-muted">Michael Kargbo vs Opponent CB</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="battle-card p-2 border rounded">
+                                            <strong>Wing Play</strong><br>
+                                            <small class="text-muted">Samuel Bangura vs Opponent LB</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+
+    <!-- Back to Fixtures -->
+    <div class="text-center mt-4">
+        <a href="{% url 'fixtures' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back to Fixtures
+        </a>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    position: relative;
+}
+
+.timeline-content {
+    border-left: 2px solid #e9ecef;
+    padding-left: 15px;
+    margin-left: 10px;
+}
+
+.progress {
+    background-color: #f8f9fa;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Live Match Animations */
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-progress {
+    animation: progress-glow 3s ease-in-out infinite;
+}
+
+@keyframes progress-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* Live Indicator */
+.live-indicator {
+    position: relative;
+    display: inline-block;
+}
+
+.pulse-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Live Commentary Styles */
+.live-commentary {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.commentary-item {
+    border-left: 3px solid #dee2e6;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.commentary-item:hover {
+    border-left-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.live-event {
+    border-left: 3px solid #dc3545 !important;
+    background-color: #fff5f5;
+    animation: highlight-event 2s ease-in-out;
+}
+
+@keyframes highlight-event {
+    0%, 100% {
+        background-color: #fff5f5;
+    }
+    50% {
+        background-color: #ffe6e6;
+    }
+}
+
+/* Live Timeline Styles */
+.live-timeline .timeline-item {
+    transition: all 0.3s ease;
+}
+
+.live-timeline .timeline-item:hover {
+    transform: translateX(5px);
+}
+
+.live-timeline .timeline-marker .badge {
+    transition: all 0.3s ease;
+}
+
+.live-timeline .timeline-item:hover .timeline-marker .badge {
+    transform: scale(1.1);
+}
+
+/* Fan Reactions Animation */
+.fan-reaction {
+    transition: all 0.3s ease;
+}
+
+.fan-reaction:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive Design for Live Match */
+@media (max-width: 768px) {
+    .live-commentary {
+        max-height: 300px;
+    }
+    
+    .display-1 {
+        font-size: 2.5rem;
+    }
+    
+    .h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Auto-refresh indicator */
+.auto-refresh-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    animation: slide-in 0.5s ease;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Live match header gradient animation */
+.live-match-header {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Upcoming Match Styles */
+.player-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.player-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.formation-display {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.stat-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.form-indicators {
+    margin-top: 5px;
+}
+
+.form-indicators .badge {
+    margin-right: 2px;
+    font-size: 0.7rem;
+}
+
+.injury-item {
+    border-left: 3px solid #dee2e6;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.injury-item:hover {
+    border-left-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.prediction-item {
+    transition: all 0.3s ease;
+}
+
+.prediction-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.battle-card {
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.battle-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #007bff !important;
+}
+
+.expert-commentary .commentary-item {
+    border-left: 3px solid #dee2e6;
+    padding-left: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.expert-commentary .commentary-item:hover {
+    border-left-color: #17a2b8;
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments for upcoming match */
+@media (max-width: 768px) {
+    .player-card {
+        font-size: 0.8rem;
+        padding: 6px;
+    }
+    
+    .formation-display {
+        padding: 10px;
+    }
+    
+    .stat-card {
+        margin-bottom: 10px;
+    }
+}
+</style>
+
+<script>
+// Live match functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Only run for live matches
+    if (document.querySelector('.live-match-header')) {
+        initializeLiveMatch();
+    }
+});
+
+function initializeLiveMatch() {
+    // Simulate live updates
+    setInterval(function() {
+        updateLiveStats();
+        updateCommentary();
+    }, 10000); // Update every 10 seconds
+    
+    // Update elapsed time every minute
+    setInterval(function() {
+        updateElapsedTime();
+    }, 60000);
+}
+
+function updateLiveStats() {
+    // Simulate live statistics updates
+    const stats = {
+        'home-shots': Math.floor(Math.random() * 3) + 8,
+        'away-shots': Math.floor(Math.random() * 3) + 5,
+        'home-shots-target': Math.floor(Math.random() * 2) + 3,
+        'away-shots-target': Math.floor(Math.random() * 2) + 2,
+        'home-corners': Math.floor(Math.random() * 2) + 4,
+        'away-corners': Math.floor(Math.random() * 2) + 3,
+        'home-fouls': Math.floor(Math.random() * 3) + 6,
+        'away-fouls': Math.floor(Math.random() * 3) + 8
+    };
+    
+    // Update DOM elements
+    Object.keys(stats).forEach(function(key) {
+        const element = document.getElementById(key);
+        if (element) {
+            element.textContent = stats[key];
+        }
+    });
+}
+
+function updateCommentary() {
+    const commentary = document.getElementById('live-commentary');
+    if (commentary) {
+        // Add new commentary item
+        const newItem = document.createElement('div');
+        newItem.className = 'commentary-item mb-3';
+        newItem.innerHTML = `
+            <div class="d-flex align-items-start">
+                <span class="badge bg-primary me-2">${Math.floor(Math.random() * 90) + 1}'</span>
+                <div class="flex-grow-1">
+                    <strong>Live Update 📡</strong>
+                    <p class="mb-1 small">Match continues with intense action from both teams!</p>
+                    <small class="text-muted">Just now</small>
+                </div>
+            </div>
+        `;
+        
+        commentary.insertBefore(newItem, commentary.firstChild);
+        
+        // Remove old items if too many
+        const items = commentary.querySelectorAll('.commentary-item');
+        if (items.length > 10) {
+            items[items.length - 1].remove();
+        }
+    }
+}
+
+function updateElapsedTime() {
+    const elapsedElement = document.getElementById('elapsed-time');
+    if (elapsedElement) {
+        const currentMinute = parseInt(elapsedElement.textContent);
+        const newMinute = Math.min(currentMinute + 1, 90);
+        elapsedElement.textContent = newMinute + "'";
+    }
+}
+
+// Show auto-refresh indicator
+function showAutoRefreshIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'auto-refresh-indicator';
+    indicator.textContent = '🔄 Auto-refreshing live data...';
+    document.body.appendChild(indicator);
+    
+    setTimeout(function() {
+        indicator.remove();
+    }, 3000);
+}
+
+// Initialize auto-refresh indicator
+if (document.querySelector('.live-match-header')) {
+    setInterval(showAutoRefreshIndicator, 30000); // Show every 30 seconds
+}
+</script>
+{% endblock %}

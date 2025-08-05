@@ -1,0 +1,24 @@
+{% for article in news_articles %}
+<article class="news-article d-flex flex-column flex-md-row align-items-md-center py-4 border-bottom">
+    <div class="news-content flex-grow-1">
+        <div class="d-flex align-items-center mb-2">
+            {% if article.image %}
+                <img src="{{ article.image.url }}" alt="{{ article.title }}" class="rounded me-2" style="height: 40px; width: 40px; object-fit: cover;">
+            {% else %}
+                <span class="d-inline-flex align-items-center justify-content-center bg-light border rounded me-2" style="height: 40px; width: 40px;">
+                    <i class="bi bi-image text-muted" style="font-size: 1.5rem;"></i>
+                </span>
+            {% endif %}
+            <h3 class="h5 mb-0"><a href="{% url 'news_detail' article.id %}" class="text-dark text-decoration-none">{{ article.title }}</a></h3>
+        </div>
+        <div class="mb-2 text-muted small">
+            <i class="bi bi-calendar"></i> {{ article.date_posted|date:"M d, Y" }} &nbsp;|&nbsp;
+            <i class="bi bi-person"></i> {{ article.author.username }} &nbsp;|&nbsp;
+            {% if article.image %}<i class="bi bi-image"></i>{% endif %}
+            {% if article.video %}<i class="bi bi-camera-video text-danger"></i>{% endif %}
+        </div>
+        <p class="mb-2 text-muted">{{ article.body|truncatewords:40 }}</p>
+        <a href="{% url 'news_detail' article.id %}" class="btn btn-link p-0 text-danger">Read More <i class="bi bi-arrow-right"></i></a>
+    </div>
+</article>
+{% endfor %} 

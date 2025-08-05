@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment - Bo Rangers FC{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-credit-card"></i> Complete Your Payment
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Order Summary -->
+                    <div class="order-summary bg-light p-4 rounded mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-receipt"></i> Order Summary
+                        </h5>
+                        <div class="row mb-2">
+                            <div class="col-6">Match:</div>
+                            <div class="col-6 text-end"><strong>{{ ticket.match.title }}</strong></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Opponent:</div>
+                            <div class="col-6 text-end">{{ ticket.match.opponent }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Date & Time:</div>
+                            <div class="col-6 text-end">{{ ticket.match.date|date:"M d, Y H:i" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Venue:</div>
+                            <div class="col-6 text-end">{{ ticket.match.venue }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Ticket Category:</div>
+                            <div class="col-6 text-end">{{ ticket.ticket_category.name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Quantity:</div>
+                            <div class="col-6 text-end">{{ ticket.quantity }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Price per ticket:</div>
+                            <div class="col-6 text-end">Nle{{ ticket.ticket_category.price }}</div>
+                        </div>
+                        <hr>
+                        <div class="row fw-bold fs-5">
+                            <div class="col-6">Total Amount:</div>
+                            <div class="col-6 text-end text-success">Nle{{ ticket.total_price }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form method="post" id="paymentForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-phone"></i> Select Payment Method
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-option" data-method="orange">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-phone text-warning" style="font-size: 2rem;"></i>
+                                            <h6 class="mt-2">Orange Money</h6>
+                                            <input type="radio" name="payment_method" value="orange_money" class="form-check-input" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-option" data-method="africell">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-phone text-primary" style="font-size: 2rem;"></i>
+                                            <h6 class="mt-2">Africell Money</h6>
+                                            <input type="radio" name="payment_method" value="africell_money" class="form-check-input" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4" id="phoneNumberSection" style="display: none;">
+                            <label for="phone_number" class="form-label">
+                                <i class="bi bi-phone"></i> Phone Number
+                            </label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   placeholder="Enter your mobile money number" required>
+                            <div class="form-text">
+                                Enter the phone number registered with your mobile money account.
+                            </div>
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-shield-check"></i>
+                            <strong>Secure Payment:</strong> This is a demo payment system. 
+                            No real money will be charged. Your ticket will be generated immediately after clicking "Pay Now".
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{% url 'book_ticket' ticket.match.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Booking
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="payButton" disabled>
+                                <i class="bi bi-credit-card"></i> Pay Now - Nle{{ ticket.total_price }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Payment method selection
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    const phoneNumberSection = document.getElementById('phoneNumberSection');
+    const phoneNumberInput = document.getElementById('phone_number');
+    const payButton = document.getElementById('payButton');
+    const paymentForm = document.getElementById('paymentForm');
+
+    paymentOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove active class from all options
+            paymentOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-light'));
+            
+            // Add active class to selected option
+            this.classList.add('border-primary', 'bg-light');
+            
+            // Check the radio button
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Show phone number section
+            phoneNumberSection.style.display = 'block';
+            phoneNumberInput.focus();
+            
+            updatePayButton();
+        });
+    });
+
+    phoneNumberInput.addEventListener('input', updatePayButton);
+
+    function updatePayButton() {
+        const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
+        const phoneNumber = phoneNumberInput.value.trim();
+        
+        if (selectedPayment && phoneNumber.length >= 8) {
+            payButton.disabled = false;
+        } else {
+            payButton.disabled = true;
+        }
+    }
+
+    // Form submission with loading state
+    paymentForm.addEventListener('submit', function(e) {
+        const payButton = document.getElementById('payButton');
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing Payment...';
+        
+        // Show processing message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-warning mt-3';
+        alert.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing your payment... Please wait.';
+        paymentForm.appendChild(alert);
+    });
+
+    // Phone number formatting
+    phoneNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+        
+        // Format as Sierra Leone phone number
+        if (value.length > 0) {
+            if (value.startsWith('232')) {
+                // Already has country code
+                value = value.substring(0, 12);
+            } else if (value.startsWith('0')) {
+                // Remove leading 0 and add country code
+                value = '232' + value.substring(1);
+                value = value.substring(0, 12);
+            } else {
+                // Add country code
+                value = '232' + value;
+                value = value.substring(0, 12);
+            }
+        }
+        
+        e.target.value = value;
+        updatePayButton();
+    });
+</script>
+{% endblock %}
+{% endblock %}

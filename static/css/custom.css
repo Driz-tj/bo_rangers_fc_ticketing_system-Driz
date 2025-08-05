@@ -1,0 +1,308 @@
+/* Bo Rangers FC Custom Styles */
+
+:root {
+    --primary-red: #dc3545;
+    --primary-red-dark: #bb2d3b;
+    --secondary-gray: #6c757d;
+    --light-gray: #f8f9fa;
+    --dark-gray: #212529;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* Navigation Enhancements */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--primary-red) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-red), var(--secondary-gray));
+    color: white;
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+    background-size: 50px 50px;
+}
+
+.hero-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Card Enhancements */
+.card-hover {
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.card-header {
+    border-bottom: none;
+    font-weight: 600;
+}
+
+/* Button Enhancements */
+.btn {
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-red-dark);
+    border-color: var(--primary-red-dark);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+/* Form Enhancements */
+.form-control {
+    border-radius: 6px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-select {
+    border-radius: 6px;
+    border: 2px solid #e9ecef;
+}
+
+.form-select:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Badge Enhancements */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+/* Match Cards */
+.match-details p {
+    margin-bottom: 0.5rem;
+}
+
+.match-details i {
+    width: 16px;
+    text-align: center;
+}
+
+/* Ticket Detail Styles */
+.ticket-info .row {
+    margin-bottom: 0.75rem;
+}
+
+.qr-code-section img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Payment Options */
+.payment-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.payment-option:hover {
+    border-color: var(--primary-red);
+    background-color: var(--light-gray);
+}
+
+.payment-option.selected {
+    border-color: var(--primary-red);
+    background-color: var(--light-gray);
+}
+
+/* News Article Styles */
+.article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.article-content p {
+    margin-bottom: 1.5rem;
+}
+
+/* Admin Dashboard */
+.admin-stat-card {
+    border-left: 4px solid var(--primary-red);
+}
+
+/* Timeline Styles */
+.timeline {
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+/* Footer Enhancements */
+.footer {
+    background-color: var(--dark-gray);
+    color: white;
+    padding: 3rem 0 1rem;
+}
+
+.footer a {
+    color: #adb5bd;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: white;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px !important;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Loading Animations */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Utility Classes */
+.text-primary {
+    color: var(--primary-red) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-red) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-red) !important;
+}
+
+/* Print Styles */
+@media print {
+    .navbar, .footer, .btn, .alert {
+        display: none !important;
+    }
+    
+    .card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    .card-header {
+        background-color: var(--primary-red) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+}
+
+/* Accessibility Enhancements */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    outline: 2px solid var(--primary-red);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000;
+    }
+    
+    .btn-outline-primary {
+        border-width: 2px;
+    }
+}
+
