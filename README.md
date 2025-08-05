@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Bo Rangers FC Digital Ticketing and Match Information System
 
 A comprehensive web application built with Django for managing football club operations, including online ticket sales, match fixtures, club news, and administrative tools.
@@ -274,3 +275,7 @@ Built with Django, Bootstrap 5, and modern web technologies.
 
 **Note**: This is a demonstration application with mock payment integration. For production use, integrate with real payment gateways and implement additional security measures.
 
+=======
+"# bo_rangers_fc_ticketing_system-Driz" 
+"# bo_rangers_fc_ticketing_system-Driz" 
+>>>>>>> a1811e08b1f0581a0a1fe3d30f5830855426dfef
